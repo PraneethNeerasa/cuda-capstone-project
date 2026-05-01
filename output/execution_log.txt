@@ -1,0 +1,14 @@
+GPU Image Processing Log
+========================
+Date: 2026-05-01 10:32:59.824074
+GPU: Tesla T4 (Google Colab)
+CUDA Version: 12.8
+NPP Library: libnppif, libnppig, libnppim, libnppist
+
+Images Processed:
+- girl.png     → girl_blurred.png     [OK]
+- mandrill.png → mandrill_blurred.png [OK]
+- couple.png   → couple_blurred.png   [OK]
+
+Operation: Gaussian Blur (NPP_MASK_SIZE_5_X_5)
+All images processed successfully. Processed: 3 | Failed: 0
