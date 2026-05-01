@@ -1,39 +1,57 @@
-# CUDA Image Processing — Gaussian Blur with NPP
+# GPU-Accelerated Batch Image Processor
 
-## Description
-This project applies a **Gaussian Blur** filter to a large batch of grayscale
-images using the **CUDA NPP (NVIDIA Performance Primitives)** library.
-It processes all images in a given input directory and saves the blurred
-results to an output directory.
+A CUDA-based image processing pipeline that applies Gaussian blur to multiple images
+in parallel using NVIDIA's NPP (NVIDIA Performance Primitives) library.
 
 ## Requirements
 - NVIDIA GPU with CUDA support
-- CUDA Toolkit (11.x or later)
-- OpenCV 4 (with TIFF support)
-- CUDA NPP library (included with CUDA Toolkit)
+- CUDA Toolkit 12.x
+- NPP libraries (included with CUDA Toolkit)
 
 ## Build
 ```bash
-make
+nvcc main.cu -o image_processor \
+    -std=c++17 \
+    -I/usr/local/cuda-12.8/include \
+    -L/usr/local/cuda-12.8/targets/x86_64-linux/lib \
+    -lnppc -lnppif -lnppig -lnppim -lnppist -lnppitc -lnppisu -lnppial -lnppicc -lnppidei \
+    -Wno-deprecated-gpu-targets
 ```
 
 ## Run
 ```bash
-./cuda_image_processor --input ./images --output ./output
+./image_processor --input images_png --output output
 ```
 
-## Arguments
-| Argument   | Description                        | Default    |
-|------------|------------------------------------|------------|
-| `--input`  | Directory containing input images  | `./images` |
+### Arguments
+| Argument | Description | Default |
+|---|---|---|
+| `--input` | Directory containing input PNG/JPG images | `./images_png` |
 | `--output` | Directory to save processed images | `./output` |
 
-## How It Works
-1. Reads each `.tiff`, `.png`, or `.jpg` image from the input directory
-2. Uploads image data to GPU memory using NPP malloc
-3. Applies 5x5 Gaussian Blur using `nppiFilterGauss_8u_C1R`
-4. Copies blurred result back to CPU
-5. Saves output as PNG in the output directory
+## Example
+```bash
+./image_processor --input images_png --output output
+# Input : images_png
+# Output: output
+# ---
+# Processing: girl.png ... OK
+# Processing: mandrill.png ... OK
+# Processing: couple.png ... OK
+# ---
+# Done! Processed: 3 | Failed: 0
+```
 
-## Dataset
-Images sourced from the USC SIPI Image Database (39 grayscale TIFF images).
+## How it works
+1. Reads all PNG/JPG images from the input directory
+2. Uploads each image to GPU memory using `cudaMemcpy2D`
+3. Applies a 5x5 Gaussian blur kernel using `nppiFilterGauss_8u_C1R` (NPP)
+4. Downloads the result back to CPU memory
+5. Saves the blurred image to the output directory
+
+## Results
+See the `output/` folder for processed images and `output/execution_log.txt` for the run log.
+See `output/comparison.png` for a side-by-side before/after comparison.
+
+## Code Style
+This project follows the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html).
